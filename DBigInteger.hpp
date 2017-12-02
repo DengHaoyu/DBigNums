@@ -23,6 +23,9 @@ private:
         return data.size();
     }
 public:
+//    static const DBigInteger ZERO = DBigInteger("0");
+//    static const DBigInteger ONE = DBigInteger("1");
+//    static const DBigInteger TEN = DBigInteger("10");
     DBigInteger(string num){
         if(num.size()==0){
             throw length_error("zero length");
@@ -46,6 +49,18 @@ public:
     }
     DBigInteger(){
         data = "";
+    }
+    DBigInteger(int i){
+        if(i>=0)this->data = to_string(i);
+        else {this->symbol = true;data = to_string(-i);}
+    }
+    DBigInteger(long long i){
+        if(i>=0)this->data = to_string(i);
+        else {this->symbol = true;data = to_string(-i);}
+    }
+    DBigInteger(long i){
+        if(i>=0)this->data = to_string(i);
+        else {this->symbol = true;data = to_string(-i);}
     }
     DBigInteger add(DBigInteger n){
         DBigInteger bigger = n>*this?n:*this;
@@ -162,14 +177,46 @@ public:
             if(carry!=0){
                 temp.data.insert(0,to_string(carry));
             }
-            temp.data.append(i,'0');
+            temp.data.append(small.length()-1-i,'0');
             sum = sum.add(temp);
+            temp.clear();
+            carry = 0;
         }
         return sum;
 
     }
-    DBigInteger divide(DBigInteger){}
-    DBigInteger mod(DBigInteger){}
+    DBigInteger divide(DBigInteger n){
+        if(*this<n){
+            return *new DBigInteger(0);
+        }
+        if(this->symbol){
+            if(n.symbol){
+                return this->opposite()/n.opposite();
+            }else{
+                return (this->opposite()/n).opposite();
+            }
+        }else{
+            if(n.symbol){
+                return (*this/n.opposite()).opposite();
+            }
+        }
+        bool notZero = true;
+        DBigInteger res(0);
+        DBigInteger a = *this;
+        while(notZero){
+            if((a-n)>=0){
+                a = a-n;
+                res++;
+            }else{
+                notZero = false;
+            }
+        }
+        return res;
+
+    }
+    DBigInteger mod(DBigInteger n){
+        return *this - (*this/n)*n;
+    }
     DBigInteger pow(int){}
     DBigInteger and_(DBigInteger){}
     DBigInteger or_(DBigInteger){}
@@ -237,17 +284,30 @@ public:
     DBigInteger operator+(DBigInteger s){
         return add(s);
     }
+    void operator++(int){
+        *this += *new DBigInteger(1);
+    }
     DBigInteger operator-(DBigInteger s){
         return subtract(s);
+    }
+    void operator-=(DBigInteger s){
+        DBigInteger res;
+        res = *this-s;
+        this->symbol = res.symbol;
+        this->data = res.data;
     }
     DBigInteger operator*(DBigInteger s){
         return multiply(s);
     }
-    DBigInteger operator/(DBigInteger){}
+    DBigInteger operator/(DBigInteger s){
+        return this->divide(s);
+    }
     bool operator!=(DBigInteger s) {
         return toStringValue()!=s.toStringValue();
     }
-
+    DBigInteger operator%(DBigInteger s){
+        return mod(s);
+    }
     bool operator==(DBigInteger s) {
         return toStringValue()==s.toStringValue();
     }
