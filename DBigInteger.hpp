@@ -217,10 +217,26 @@ public:
     DBigInteger mod(DBigInteger n){
         return *this - (*this/n)*n;
     }
-    DBigInteger pow(int){}
-    DBigInteger and_(DBigInteger){}
-    DBigInteger or_(DBigInteger){}
-    DBigInteger not_(DBigInteger){}
+    DBigInteger pow(int p){
+        DBigInteger res;
+        if(*this==1){
+            res = 1;
+            return res;
+        }
+        if(p == 0){
+            if(*this==0){
+                throw new bad_exception;
+            }
+            res = 0;
+        }else if(p<0){
+            return 0;
+        }
+        res = *this;
+        for(int i = 1;i<p;i++){
+            res *= *this;
+        }
+        return res;
+    }
     DBigInteger opposite(){
         DBigInteger d = *this;
         if(d.symbol == true){
@@ -235,51 +251,6 @@ public:
         d.symbol = false;
         return d;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     DBigInteger operator+(DBigInteger s){
         return add(s);
@@ -311,6 +282,9 @@ public:
     bool operator==(DBigInteger s) {
         return toStringValue()==s.toStringValue();
     }
+    bool operator==(int p){
+        return to_string(p)==this->data;
+    }
     void operator+=(DBigInteger s){
         *this = *this+s;
     }
@@ -318,7 +292,11 @@ public:
         if(*this>s||*this==s){return true;}
         return false;
     }
-
+    void operator*=(DBigInteger s){
+        DBigInteger res = *this;
+        res = res * s;
+        *this = res;
+    }
     bool operator<=(DBigInteger s) {
         if(*this<s||*this==s){return true;}
         return false;
@@ -349,9 +327,18 @@ public:
         if(*this==s){return false;}
         return true;
     }
-    void operator=(DBigInteger s){
+     void operator=(DBigInteger s){
         this->symbol = s.symbol;
         this->data = s.data;
+    }
+     void operator=(int s){
+        if(s<=0){
+            this->data = to_string(-s);
+            this->symbol = true;
+            return;
+        }
+        this->data = to_string(s);
+        this->symbol = false;
     }
     int operator[](int i){
         return (int)data.data()[i]-'0';
